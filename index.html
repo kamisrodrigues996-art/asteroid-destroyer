@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -18,14 +19,14 @@
 body {
     margin: 0;
     min-height: 100vh;
-    padding: 18px;
+    padding: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
     background:
-        radial-gradient(ellipse at 20% 20%, #251044 0%, transparent 45%),
-        radial-gradient(ellipse at 80% 80%, #082a42 0%, transparent 45%),
+        radial-gradient(ellipse at 20% 20%, #251044, transparent 45%),
+        radial-gradient(ellipse at 80% 80%, #082a42, transparent 45%),
         var(--bg);
     font-family: Arial, sans-serif;
     overflow-x: hidden;
@@ -38,24 +39,18 @@ body {
 }
 
 h1 {
-    font-size: clamp(26px, 5vw, 48px);
-    letter-spacing: 3px;
+    font-size: clamp(23px, 5vw, 46px);
+    letter-spacing: 2px;
     color: var(--cyan);
-    text-shadow: 0 0 8px var(--cyan), 0 0 25px var(--purple);
-    animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-    from { text-shadow: 0 0 8px var(--cyan), 0 0 18px var(--purple); }
-    to { text-shadow: 0 0 15px var(--pink), 0 0 35px var(--cyan); }
+    text-shadow: 0 0 10px var(--cyan), 0 0 25px var(--purple);
 }
 
 .panel {
-    padding: 25px;
+    padding: 24px;
     border: 1px solid #5a3c94;
     border-radius: 18px;
-    background: rgba(12, 13, 35, .92);
-    box-shadow: 0 0 20px #782bff55, inset 0 0 20px #162b5a55;
+    background: rgba(12, 13, 35, .94);
+    box-shadow: 0 0 20px #782bff55;
 }
 
 h2 { color: var(--pink); }
@@ -80,11 +75,9 @@ button {
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 0 12px #347fff77;
-    transition: .2s;
 }
 
 button:hover {
-    transform: scale(1.05);
     box-shadow: 0 0 20px var(--cyan);
 }
 
@@ -94,16 +87,15 @@ button:hover {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     margin: 12px 0;
 }
 
 .hud span {
-    padding: 10px 16px;
+    padding: 9px 12px;
     border: 1px solid #643ed2;
     border-radius: 10px;
     background: #11142c;
-    box-shadow: 0 0 10px #733dff66;
 }
 
 canvas {
@@ -117,6 +109,8 @@ canvas {
     border-radius: 12px;
     box-shadow: 0 0 12px var(--cyan), 0 0 28px #8b35d966;
     touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .controls-info {
@@ -125,52 +119,24 @@ canvas {
     margin: 12px;
 }
 
-.mobile-controls {
-    display: none;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-    margin: 14px auto;
-    touch-action: none;
-}
-
-.mobile-controls button {
-    width: 76px;
-    height: 65px;
-    font-size: 25px;
-    margin: 0;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
-}
-
-.mobile-controls .fire {
-    width: 110px;
-    background: linear-gradient(110deg, #e51b9c, #8528e8);
-    border-color: var(--pink);
-    box-shadow: 0 0 16px #ff35d388;
-    font-size: 16px;
-}
-
 #message {
     color: #ffe66d;
     min-height: 24px;
 }
 
 @media (pointer: coarse), (max-width: 700px) {
-    .mobile-controls { display: flex; }
-    body { padding: 8px; }
+    body { padding: 6px; }
     .panel { padding: 15px; }
-    .controls-info { display: none; }
+    h1 { font-size: 24px; margin: 10px 0; }
+    .hud { margin: 7px 0; }
+    .hud span { padding: 7px; font-size: 12px; }
 }
 
 @media (max-height: 500px) and (orientation: landscape) {
-    body { padding: 4px; }
-    h1 { font-size: 22px; margin: 3px; }
+    body { padding: 3px; }
+    h1 { font-size: 18px; margin: 3px; }
     .hud { margin: 4px; }
-    .hud span { padding: 5px 9px; }
-    .mobile-controls { margin: 5px; }
-    .mobile-controls button { height: 48px; }
+    .controls-info { margin: 4px; }
 }
 </style>
 </head>
@@ -199,7 +165,7 @@ canvas {
         <option value="special">💜 Nave Especial</option>
     </select>
 
-    <p id="shipDescription">Rápida e fácil de controlar.</p>
+    <p id="shipDescription">⚡ Muito rápida. Ideal para escapar.</p>
 
     <p>🏆 Recorde: <strong id="bestScore">0</strong></p>
 
@@ -215,17 +181,12 @@ canvas {
 
     <canvas id="canvas" width="800" height="600"></canvas>
 
-    <div class="mobile-controls">
-        <button id="leftBtn">⬅</button>
-        <button class="fire" id="fireBtn">🔥 ATIRAR</button>
-        <button id="rightBtn">➡</button>
-    </div>
-
-    <p class="controls-info">
+    <p class="controls-info" id="controlInfo">
         COMPUTADOR: ← → ou A/D para mover | ESPAÇO para atirar
     </p>
 
     <p id="message"></p>
+
     <button onclick="backToMenu()">VOLTAR AO MENU</button>
 </div>
 
@@ -235,29 +196,64 @@ canvas {
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+const isMobile =
+    window.matchMedia("(pointer: coarse)").matches;
+
 const difficulties = {
-    easy: { name: "Fácil", speed: 1.2, spawn: 1100, max: 5 },
-    medium: { name: "Médio", speed: 2, spawn: 800, max: 8 },
-    hard: { name: "Difícil", speed: 3, spawn: 550, max: 12 },
-    extreme: { name: "Extremo", speed: 4.2, spawn: 350, max: 16 }
+    easy: {
+        name: "Fácil",
+        speed: 1.2,
+        spawn: 1100,
+        max: 5
+    },
+    medium: {
+        name: "Médio",
+        speed: 2,
+        spawn: 800,
+        max: 8
+    },
+    hard: {
+        name: "Difícil",
+        speed: 3,
+        spawn: 550,
+        max: 12
+    },
+    extreme: {
+        name: "Extremo",
+        speed: 4.2,
+        spawn: 350,
+        max: 16
+    }
 };
 
 const ships = {
     agile: {
         description: "⚡ Muito rápida. Ideal para escapar.",
-        speed: 7, lives: 3, weapon: "normal", color: "#00f5ff"
+        speed: 7,
+        lives: 3,
+        weapon: "normal",
+        color: "#00f5ff"
     },
     combat: {
         description: "🔥 Dispara lasers mais rapidamente.",
-        speed: 5, lives: 3, weapon: "fast", color: "#ff5555"
+        speed: 5,
+        lives: 3,
+        weapon: "fast",
+        color: "#ff5555"
     },
     armor: {
         description: "🛡️ Começa com 5 vidas, mas é mais lenta.",
-        speed: 4, lives: 5, weapon: "normal", color: "#72ff8b"
+        speed: 4,
+        lives: 5,
+        weapon: "normal",
+        color: "#72ff8b"
     },
     special: {
         description: "💜 Dispara três lasers de uma vez.",
-        speed: 5, lives: 3, weapon: "triple", color: "#c58aff"
+        speed: 5,
+        lives: 3,
+        weapon: "triple",
+        color: "#c58aff"
     }
 };
 
@@ -265,65 +261,119 @@ let player;
 let asteroids = [];
 let lasers = [];
 let stars = [];
+
 let score = 0;
 let lives = 3;
 let running = false;
 let animationId = null;
+
 let selectedDifficulty;
 let selectedShip;
+
 let lastShot = 0;
 let lastAsteroid = 0;
 
-const keys = {};
-const touch = { left: false, right: false, fire: false };
+let dragging = false;
+let targetX = null;
 
-let bestScore = Number(localStorage.getItem("asteroidRecord")) || 0;
+const keys = {};
+
+let bestScore = 0;
+
+try {
+    bestScore =
+        Number(localStorage.getItem("asteroidRecord")) || 0;
+} catch (error) {
+    bestScore = 0;
+}
+
 document.getElementById("bestScore").textContent = bestScore;
 
-document.getElementById("shipChoice").addEventListener("change", function() {
-    document.getElementById("shipDescription").textContent =
-        ships[this.value].description;
-});
+document.getElementById("shipChoice")
+    .addEventListener("change", function() {
+        document.getElementById("shipDescription").textContent =
+            ships[this.value].description;
+    });
 
-// Controles do teclado
+if (isMobile) {
+    document.getElementById("controlInfo").textContent =
+        "📱 Arraste o dedo para mover a nave. Os tiros são automáticos!";
+}
+
+// CONTROLES DO COMPUTADOR
+
 document.addEventListener("keydown", function(event) {
-    keys[event.key.toLowerCase()] = true;
-    if (event.code === "Space") event.preventDefault();
-    if (event.key === "Escape" && running) backToMenu();
+    const key = event.key.toLowerCase();
+
+    keys[key] = true;
+
+    if (
+        event.code === "Space" ||
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight"
+    ) {
+        if (running) event.preventDefault();
+    }
+
+    if (event.key === "Escape" && running) {
+        backToMenu();
+    }
 });
 
 document.addEventListener("keyup", function(event) {
     keys[event.key.toLowerCase()] = false;
 });
 
-// Controles de toque do celular
-function setupTouchButton(id, action) {
-    const button = document.getElementById(id);
+// CONTROLES DO CELULAR
 
-    button.addEventListener("pointerdown", function(event) {
-        event.preventDefault();
-        touch[action] = true;
-        button.setPointerCapture(event.pointerId);
-    });
+function getTouchX(event) {
+    const rect = canvas.getBoundingClientRect();
 
-    function release() {
-        touch[action] = false;
-    }
+    const relativeX =
+        (event.clientX - rect.left) / rect.width;
 
-    button.addEventListener("pointerup", release);
-    button.addEventListener("pointercancel", release);
-    button.addEventListener("lostpointercapture", release);
-    button.addEventListener("pointerleave", release);
+    return Math.max(
+        25,
+        Math.min(canvas.width - 25, relativeX * canvas.width)
+    );
 }
 
-setupTouchButton("leftBtn", "left");
-setupTouchButton("rightBtn", "right");
-setupTouchButton("fireBtn", "fire");
+canvas.addEventListener("pointerdown", function(event) {
+    if (!running || event.pointerType === "mouse") return;
+
+    event.preventDefault();
+
+    dragging = true;
+    targetX = getTouchX(event);
+
+    canvas.setPointerCapture(event.pointerId);
+});
+
+canvas.addEventListener("pointermove", function(event) {
+    if (!running || !dragging) return;
+
+    event.preventDefault();
+
+    targetX = getTouchX(event);
+});
+
+function stopDragging() {
+    dragging = false;
+    targetX = null;
+}
+
+canvas.addEventListener("pointerup", stopDragging);
+canvas.addEventListener("pointercancel", stopDragging);
+canvas.addEventListener("lostpointercapture", stopDragging);
+
+// INFORMAÇÕES
 
 function updateInfo() {
     document.getElementById("score").textContent = score;
     document.getElementById("lives").textContent = lives;
 }
+
+// INICIAR JOGO
 
 function startGame() {
     selectedDifficulty =
@@ -334,8 +384,10 @@ function startGame() {
 
     score = 0;
     lives = selectedShip.lives;
+
     asteroids = [];
     lasers = [];
+    stars = [];
 
     player = {
         x: canvas.width / 2,
@@ -343,8 +395,6 @@ function startGame() {
         speed: selectedShip.speed,
         color: selectedShip.color
     };
-
-    stars = [];
 
     for (let i = 0; i < 90; i++) {
         stars.push({
@@ -357,26 +407,39 @@ function startGame() {
 
     document.getElementById("menu").style.display = "none";
     document.getElementById("game").style.display = "block";
+
     document.getElementById("levelName").textContent =
         selectedDifficulty.name;
+
     document.getElementById("message").textContent = "";
 
     updateInfo();
-    touch.left = touch.right = touch.fire = false;
 
     running = true;
+    dragging = false;
+    targetX = null;
+
     lastShot = 0;
-    lastAsteroid = 0;
+    lastAsteroid = Date.now();
 
     cancelAnimationFrame(animationId);
     gameLoop();
 }
 
+// ESTRELAS
+
 function drawStars() {
     stars.forEach(star => {
         ctx.fillStyle = "#ffffff";
         ctx.globalAlpha = 0.3 + Math.random() * 0.7;
-        ctx.fillRect(star.x, star.y, star.size, star.size);
+
+        ctx.fillRect(
+            star.x,
+            star.y,
+            star.size,
+            star.size
+        );
+
         star.y += star.speed;
 
         if (star.y > canvas.height) {
@@ -388,8 +451,11 @@ function drawStars() {
     ctx.globalAlpha = 1;
 }
 
+// DESENHAR NAVE
+
 function drawPlayer() {
     ctx.save();
+
     ctx.translate(player.x, player.y);
 
     ctx.shadowColor = player.color;
@@ -406,13 +472,16 @@ function drawPlayer() {
 
     ctx.shadowBlur = 15;
     ctx.fillStyle = "#ffffff";
+
     ctx.beginPath();
     ctx.arc(0, 0, 5, 0, Math.PI * 2);
     ctx.fill();
 
     // Fogo dos motores
+
     ctx.fillStyle = "#ff8c32";
     ctx.shadowColor = "#ff35d3";
+
     ctx.beginPath();
     ctx.moveTo(-7, 17);
     ctx.lineTo(0, 34 + Math.random() * 9);
@@ -421,6 +490,8 @@ function drawPlayer() {
 
     ctx.restore();
 }
+
+// CRIAR ASTEROIDES
 
 function createAsteroid() {
     const radius = 15 + Math.random() * 22;
@@ -431,18 +502,23 @@ function createAsteroid() {
     }
 
     asteroids.push({
-        x: radius + Math.random() * (canvas.width - radius * 2),
+        x: radius + Math.random() *
+            (canvas.width - radius * 2),
         y: -radius,
-        radius,
-        speed: selectedDifficulty.speed + Math.random() * 1.5,
+        radius: radius,
+        speed: selectedDifficulty.speed +
+            Math.random() * 1.5,
         rotation: Math.random() * 6,
-        points
+        points: points
     });
 }
+
+// DESENHAR ASTEROIDES
 
 function drawAsteroids() {
     asteroids.forEach(a => {
         ctx.save();
+
         ctx.translate(a.x, a.y);
         ctx.rotate(a.rotation);
 
@@ -455,30 +531,46 @@ function drawAsteroids() {
         ctx.beginPath();
 
         for (let i = 0; i < a.points.length; i++) {
-            const angle = i * Math.PI * 2 / a.points.length;
+            const angle =
+                i * Math.PI * 2 / a.points.length;
+
             const size = a.radius * a.points[i];
+
             const x = Math.cos(angle) * size;
             const y = Math.sin(angle) * size;
 
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
         }
 
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
+
         ctx.restore();
     });
 }
 
+// TIROS AUTOMÁTICOS NO CELULAR
+
 function shoot() {
-    const firing = keys[" "] || keys["space"] || touch.fire;
+    const firing =
+        isMobile ||
+        keys[" "] ||
+        keys["space"];
+
     if (!firing) return;
 
-    const delay = selectedShip.weapon === "fast" ? 160 : 350;
+    const delay =
+        selectedShip.weapon === "fast" ? 160 : 350;
+
     const now = Date.now();
 
     if (now - lastShot < delay) return;
+
     lastShot = now;
 
     if (selectedShip.weapon === "triple") {
@@ -488,23 +580,39 @@ function shoot() {
             { x: player.x + 13, y: player.y - 15 }
         );
     } else {
-        lasers.push({ x: player.x, y: player.y - 25 });
+        lasers.push({
+            x: player.x,
+            y: player.y - 25
+        });
     }
 }
 
+// DESENHAR LASERS
+
 function drawLasers() {
+    ctx.save();
+
     ctx.fillStyle = "#00f5ff";
     ctx.shadowColor = "#00f5ff";
     ctx.shadowBlur = 18;
 
     lasers.forEach(laser => {
-        ctx.fillRect(laser.x - 3, laser.y, 6, 18);
+        ctx.fillRect(
+            laser.x - 3,
+            laser.y,
+            6,
+            18
+        );
+
         laser.y -= 9;
     });
 
-    ctx.shadowBlur = 0;
+    ctx.restore();
+
     lasers = lasers.filter(laser => laser.y > -20);
 }
+
+// COLISÕES
 
 function checkCollisions() {
     for (let i = asteroids.length - 1; i >= 0; i--) {
@@ -513,14 +621,17 @@ function checkCollisions() {
 
         for (let j = lasers.length - 1; j >= 0; j--) {
             const l = lasers[j];
+
             const dx = a.x - l.x;
             const dy = a.y - l.y;
 
             if (Math.sqrt(dx * dx + dy * dy) < a.radius) {
                 asteroids.splice(i, 1);
                 lasers.splice(j, 1);
+
                 score += 10;
                 updateInfo();
+
                 destroyed = true;
                 break;
             }
@@ -531,11 +642,16 @@ function checkCollisions() {
 
     for (let i = asteroids.length - 1; i >= 0; i--) {
         const a = asteroids[i];
+
         const dx = a.x - player.x;
         const dy = a.y - player.y;
 
-        if (Math.sqrt(dx * dx + dy * dy) < a.radius + 18) {
+        if (
+            Math.sqrt(dx * dx + dy * dy) <
+            a.radius + 18
+        ) {
             asteroids.splice(i, 1);
+
             lives--;
             updateInfo();
 
@@ -547,16 +663,32 @@ function checkCollisions() {
     }
 }
 
+// ATUALIZAR JOGO
+
 function update() {
-    if (keys["arrowleft"] || keys["a"] || touch.left) {
-        player.x -= player.speed;
+    if (isMobile && dragging && targetX !== null) {
+        // A nave acompanha o dedo suavemente.
+        const difference = targetX - player.x;
+
+        player.x += difference * 0.35;
+
+        if (Math.abs(difference) < 1) {
+            player.x = targetX;
+        }
+    } else {
+        if (keys["arrowleft"] || keys["a"]) {
+            player.x -= player.speed;
+        }
+
+        if (keys["arrowright"] || keys["d"]) {
+            player.x += player.speed;
+        }
     }
 
-    if (keys["arrowright"] || keys["d"] || touch.right) {
-        player.x += player.speed;
-    }
-
-    player.x = Math.max(25, Math.min(canvas.width - 25, player.x));
+    player.x = Math.max(
+        25,
+        Math.min(canvas.width - 25, player.x)
+    );
 
     shoot();
 
@@ -575,7 +707,8 @@ function update() {
         a.rotation += 0.01;
     });
 
-    // Se passar pela nave, o asteroide não tira vida.
+    // Asteroides que passam não tiram vida.
+
     asteroids = asteroids.filter(
         a => a.y < canvas.height + a.radius
     );
@@ -583,61 +716,107 @@ function update() {
     checkCollisions();
 }
 
+// DESENHAR JOGO
+
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
     drawStars();
     drawPlayer();
     drawAsteroids();
     drawLasers();
 }
 
+// LOOP PRINCIPAL
+
 function gameLoop() {
     if (!running) return;
 
     update();
+
     if (!running) return;
 
     draw();
+
     animationId = requestAnimationFrame(gameLoop);
 }
 
+// FIM DE JOGO
+
 function gameOver() {
     running = false;
+
     cancelAnimationFrame(animationId);
 
     if (score > bestScore) {
         bestScore = score;
-        localStorage.setItem("asteroidRecord", bestScore);
-        document.getElementById("bestScore").textContent = bestScore;
+
+        try {
+            localStorage.setItem(
+                "asteroidRecord",
+                bestScore
+            );
+        } catch (error) {
+            // O jogo continua mesmo sem armazenamento.
+        }
+
+        document.getElementById("bestScore").textContent =
+            bestScore;
     }
 
     document.getElementById("message").textContent =
         "FIM DE JOGO! Pontuação: " + score;
 
     ctx.fillStyle = "rgba(3, 5, 16, 0.85)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
     ctx.textAlign = "center";
     ctx.shadowColor = "#ff35d3";
     ctx.shadowBlur = 20;
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 46px Arial";
-    ctx.fillText("FIM DE JOGO!", canvas.width / 2, 260);
+
+    ctx.fillText(
+        "FIM DE JOGO!",
+        canvas.width / 2,
+        260
+    );
 
     ctx.shadowBlur = 0;
     ctx.font = "25px Arial";
-    ctx.fillText("Pontos: " + score, canvas.width / 2, 315);
+
+    ctx.fillText(
+        "Pontos: " + score,
+        canvas.width / 2,
+        315
+    );
 }
+
+// VOLTAR AO MENU
 
 function backToMenu() {
     running = false;
+
     cancelAnimationFrame(animationId);
 
-    touch.left = touch.right = touch.fire = false;
+    dragging = false;
+    targetX = null;
 
     document.getElementById("game").style.display = "none";
     document.getElementById("menu").style.display = "block";
-    document.getElementById("bestScore").textContent = bestScore;
+
+    document.getElementById("bestScore").textContent =
+        bestScore;
 }
 </script>
 </body>
